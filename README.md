@@ -19,6 +19,7 @@ Every push and pull request to `main` automatically runs linting, a formatting c
 ├── tests/
 │   ├── __init__.py
 │   └── test_calc.py             # pytest unit tests
+├── assets/images/               # CI screenshots
 ├── requirements.txt             # pytest, flake8, black
 ├── LICENSE
 └── README.md
@@ -74,25 +75,84 @@ A pull request that deliberately contains a failing test shows the pipeline goin
 
 ### Passing run
 
-_Screenshot to be added._
+All three Python versions pass on the first run (26s).
+
+![All three Python versions passing](assets/images/passing-run.png)
+
+### Passing steps
+
+Lint, format check and tests all pass on Python 3.10.
+
+![Lint, format and test steps passing](assets/images/passing-steps.png)
+
+### Cached dependencies
+
+The re-run finishes in 15s instead of 26s because the pip cache is restored.
+
+![Re-run finishing faster thanks to the pip cache](assets/images/cache-speedup.png)
 
 ### Failing pull request
 
-_Screenshot to be added._
+The pull request `test/failing-scenario` contains a deliberately broken test. All three matrix jobs fail.
+
+![Failing run on Python 3.10, 3.11 and 3.12](assets/images/failing-run.png)
+
+### Failing test log
+
+The `Run tests with pytest` step exits with code 1.
+
+![pytest log showing assert 4 == 5](assets/images/failing-log.png)
 
 ### Blocked merge
 
-_Screenshot to be added._
+With branch protection enabled, the merge button is disabled while the checks fail.
 
-### Cache restored
+![Merge blocked by failing status checks](assets/images/blocked-merge.png)
 
-_Screenshot to be added._
+### Checks pending
+
+After the fix is pushed, the pipeline runs again. The merge button stays disabled while a required check is still running.
+
+![Merge blocked while a check is in progress](assets/images/checks-pending.png)
+
+### Fixed pull request
+
+After the test is corrected, all three required checks pass and the merge button is enabled.
+
+![All checks passed, merge enabled](assets/images/fixed-pr.png)
 
 ---
 
 ## Execution Logs
 
-_Log excerpts to be added._
+Passing run:
+
+```text
+tests/test_calc.py .....                                    [100%]
+
+============================ 5 passed in 0.06s ============================
+```
+
+Failing run:
+
+```text
+tests/test_calc.py F....                                    [100%]
+
+================================ FAILURES =================================
+_______________________________ test_add __________________________________
+
+    def test_add():
+>       assert add(2, 2) == 5
+E       assert 4 == 5
+E        +  where 4 = add(2, 2)
+
+tests/test_calc.py:7: AssertionError
+========================= short test summary info =========================
+FAILED tests/test_calc.py::test_add - assert 4 == 5
+======================== 1 failed, 4 passed in 0.16s ======================
+```
+
+In GitHub Actions the same failure ends with `Process completed with exit code 1`, which marks the job red.
 
 ---
 
